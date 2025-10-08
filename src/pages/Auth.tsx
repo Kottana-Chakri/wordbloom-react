@@ -72,6 +72,9 @@ const Auth = () => {
     setIsGoogleLoading(false);
   };
 
+  // Show the redirect URL we'll send to Supabase (helpful for debugging)
+  const debugRedirectUrl = import.meta.env.VITE_REDIRECT_URL || `${window.location.origin}/`;
+
   return (
     <div className="min-h-screen gradient-subtle flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
@@ -95,6 +98,11 @@ const Auth = () => {
 
           <TabsContent value="signin">
             <Card className="shadow-elevated">
+              {import.meta.env.DEV && (
+                <div className="px-6 pt-4">
+                  <p className="text-xs text-muted-foreground">OAuth redirect: <span className="font-mono">{debugRedirectUrl}</span></p>
+                </div>
+              )}
               <form onSubmit={handleSignIn}>
                 <CardHeader>
                   <CardTitle>Sign In</CardTitle>
@@ -138,14 +146,15 @@ const Auth = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="w-full" 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full flex justify-center"
                     onClick={handleGoogleSignIn}
                     disabled={isGoogleLoading}
+                    aria-label="Sign in with Google"
                   >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                       <path
                         fill="currentColor"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -163,7 +172,13 @@ const Auth = () => {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    {isGoogleLoading ? "Connecting..." : "Continue with Google"}
+                    {/* Icon-only button: show spinner when loading */}
+                    {isGoogleLoading && (
+                      <svg className="ml-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                      </svg>
+                    )}
                   </Button>
                 </CardFooter>
               </form>
@@ -227,14 +242,15 @@ const Auth = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="w-full" 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full flex justify-center"
                     onClick={handleGoogleSignIn}
                     disabled={isGoogleLoading}
+                    aria-label="Sign up with Google"
                   >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                       <path
                         fill="currentColor"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -252,7 +268,12 @@ const Auth = () => {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    {isGoogleLoading ? "Connecting..." : "Continue with Google"}
+                    {isGoogleLoading && (
+                      <svg className="ml-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                      </svg>
+                    )}
                   </Button>
                 </CardFooter>
               </form>

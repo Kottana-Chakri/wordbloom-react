@@ -59,8 +59,9 @@ const CreatePost = () => {
 
       if (error) throw error;
 
-      toast.success("Post published successfully!");
-      navigate(`/post/${data.id}`);
+  toast.success("Post published successfully!");
+  // After publishing, navigate directly to the home page as requested
+  navigate("/");
     } catch (error: any) {
       toast.error(error.message || "Failed to create post");
     } finally {

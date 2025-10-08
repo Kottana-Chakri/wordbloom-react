@@ -2,8 +2,14 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Vite .env values may accidentally include surrounding quotes (e.g. "value").
+// Normalize by trimming optional surrounding double-quotes so keys/urls still work
+// even if the .env file contains quotes.
+const _rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
+const _rawSupabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+
+const SUPABASE_URL = String(_rawSupabaseUrl).replace(/^"(.*)"$/, '$1');
+const SUPABASE_PUBLISHABLE_KEY = String(_rawSupabaseKey).replace(/^"(.*)"$/, '$1');
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

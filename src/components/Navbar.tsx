@@ -19,9 +19,10 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-                <Link to="/" className="flex items-center gap-3 transition-smooth hover:opacity-80">
-          <img src="/logo.svg" alt="WordBloom logo" className="h-8 w-8 rounded-md" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">WordBloom</span>
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 transition-smooth hover:opacity-80">
+          <img src="/logo.svg" alt="WordBloom logo" className="h-8 w-8 rounded-md flex-shrink-0" />
+          {/* Hide the full site text on small screens to avoid overlap with right-side controls */}
+          <span className="hidden sm:inline text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">WordBloom</span>
         </Link>
 
         <div className="flex items-center gap-3">

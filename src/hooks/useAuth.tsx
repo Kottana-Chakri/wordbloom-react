@@ -88,42 +88,119 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, username: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          username,
-        },
-      },
-    });
 
-    if (error) {
-      toast.error(error.message);
-      return { error };
+    // Check username availability first to surface friendly errors
+    try {
+      const { data: existing, error: checkErr } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .limit(1);
+
+      if (checkErr) {
+        console.error('Error checking username availability:', checkErr);
+        toast.error('Error checking username availability');
+        return { error: checkErr };
+      }
+
+      if (existing && existing.length > 0) {
+        const msg = 'Username already taken. Please choose another.';
+        toast.error(msg);
+        return { error: new Error(msg) };
+      }
+    } catch (err) {
+      console.error('Unexpected error checking username:', err);
+      toast.error('Unexpected error checking username');
+      return { error: err };
     }
 
-    toast.success("Account created! Welcome to the blog.");
-    navigate("/");
-    return { error: null };
+    // Proceed to create user
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            username,
+          },
+        },
+      });
+
+      if (error) {
+        // Surface DB trigger or other errors clearly
+        console.error('Sign up error:', error);
+        toast.error(error.message || 'Failed to create account');
+        return { error };
+      }
+    } catch (err: any) {
+      console.error('Unexpected error during signUp:', err);
+      toast.error(err?.message || 'Unexpected error during sign up');
+      return { error: err };
+    }
+
+    // Try to sign the user in immediately after signup. In some Supabase
+    // configs an email confirmation is required; in that case signIn will
+    // return an error and we show an informative message.
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        // Common case: confirmation required or other provider-specific flows.
+        toast.success("Account created! Check your email to confirm your account.");
+        // Keep on auth page so user can follow instructions
+        navigate("/auth");
+        return { error: null };
+      }
+
+      // Signed in successfully
+      toast.success("Account created! You're signed in.");
+      navigate("/");
+      return { error: null };
+    } catch (err: any) {
+      console.error('Error signing in after signup:', err);
+      toast.success("Account created! Check your email to confirm your account.");
+      navigate("/auth");
+      return { error: null };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    // Attempt to sign in
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      toast.error(error.message);
+      // Provide clearer feedback for common auth errors
+      const msg = error.message || "Invalid credentials";
+      toast.error(msg);
       return { error };
     }
 
-    toast.success("Welcome back!");
-    navigate("/");
-    return { error: null };
+    // Confirm we have a session/user after sign in
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        const errMsg = sessionError?.message || "Sign-in completed but session not available";
+        console.error('Session check after signIn failed:', sessionError);
+        toast.error(errMsg);
+        return { error: sessionError || new Error(errMsg) };
+      }
+
+      // All good - user is signed in
+      toast.success("Welcome back!");
+      navigate("/");
+      return { error: null };
+    } catch (err: any) {
+      console.error('Unexpected error after signIn:', err);
+      toast.error('Unexpected sign-in error');
+      return { error: err };
+    }
   };
 
   const signInWithGoogle = async () => {
